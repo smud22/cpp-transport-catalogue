@@ -1,4 +1,5 @@
 #pragma once
+#include "geo.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -12,8 +13,7 @@
 namespace TransportCatalogue {
 struct Stop {
 	std::string name;
-	double latitude;
-	double longitude;
+	Geo::Coordinates coordinates;
 };
 
 struct Bus {

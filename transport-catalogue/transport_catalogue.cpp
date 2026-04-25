@@ -5,7 +5,7 @@
 
 namespace TransportCatalogue {
 void TransportCatalogue::AddStop(std::string name, double latitude, double longitude) {
-    stops_container_.push_back(Stop{std::move(name), latitude, longitude});
+    stops_container_.push_back(Stop{std::move(name), {latitude, longitude}});
     stops_map_.insert({stops_container_.back().name, &stops_container_.back()});
 }
 void TransportCatalogue::AddBus(std::string name, const std::vector<const Stop*>& routes) {
@@ -25,10 +25,9 @@ std::optional<RouteInfo> TransportCatalogue::GetRouteStat(std::string_view name)
     size_t unique_stops = std::unordered_set<const Stop*>(it->second->route.begin(), it->second->route.end()).size();
     double route_length = 0;
     for (size_t i(0); i < it->second->route.size() - 1; ++i) {
-        route_length += Geo::ComputeDistance({it->second->route[i]->latitude, it->second->route[i]->longitude},
-                                        {it->second->route[i + 1]->latitude, it->second->route[i + 1]->longitude});
+        route_length += Geo::ComputeDistance({it->second->route[i]->coordinates.lat, it->second->route[i]->coordinates.lng},
+                                        {it->second->route[i + 1]->coordinates.lat, it->second->route[i + 1]->coordinates.lng});
     }
-
     return RouteInfo{stops_count, unique_stops, route_length};
 }
 

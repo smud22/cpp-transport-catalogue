@@ -4,8 +4,8 @@
 #include <algorithm>
 
 namespace TransportCatalogue {
-void TransportCatalogue::AddStop(std::string name, double latitude, double longitude) {
-    stops_container_.push_back(Stop{std::move(name), {latitude, longitude}});
+void TransportCatalogue::AddStop(std::string name, Geo::Coordinates coords) {
+    stops_container_.push_back(Stop{std::move(name), coords});
     stops_map_.insert({stops_container_.back().name, &stops_container_.back()});
 }
 void TransportCatalogue::AddBus(std::string name, const std::vector<const Stop*>& routes) {

@@ -29,7 +29,7 @@ struct RouteInfo {
 
 class TransportCatalogue {
 public:
-	void AddStop(std::string name, double latitude, double longitude);
+	void AddStop(std::string name, Geo::Coordinates coords);
 	void AddBus(std::string name, const std::vector<const Stop*>& routes);
 	const Stop* FindStop(std::string_view name) const;
 	const Bus* FindBus(std::string_view name) const;

@@ -96,7 +96,7 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     for (const auto& command : commands_) {
         if (command.command == "Stop") {
             auto coordinates = Detail::ParseCoordinates(command.description);
-            catalogue.AddStop(command.id, coordinates.lat, coordinates.lng);
+            catalogue.AddStop(command.id, coordinates);
         }
     }
 

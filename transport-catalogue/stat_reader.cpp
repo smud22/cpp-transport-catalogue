@@ -27,9 +27,9 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
         auto info_opt = transport_catalogue.GetRouteStat(name);
         if (info_opt.has_value()) {
             const auto& bus_info = info_opt.value();
-            output << std::format("Bus {}: {} stops on route, {} unique stops, {:.6g} route length\n",
+            output << std::format("Bus {}: {} stops on route, {} unique stops, {:.6g} route length, {:.6g} curvature\n",
                                 name, bus_info.stops_count, bus_info.unique_stops,
-                                bus_info.route_length);
+                                static_cast<double>(bus_info.real_length), bus_info.real_length / bus_info.geograph_length);
         }
         else
             output << std::format("Bus {}: not found\n", name);

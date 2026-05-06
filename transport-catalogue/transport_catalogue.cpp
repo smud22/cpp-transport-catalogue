@@ -16,6 +16,12 @@ void TransportCatalogue::AddBus(std::string name, const std::vector<const Stop*>
     buses_map_.insert({buses_container_.back().name, &buses_container_.back()});
 }
 
+void TransportCatalogue::AddStopDistance(const Stop* from, const Stop* to, int distance) {
+    stop_distance_[{from, to}] = distance;
+    if (auto it = stop_distance_.find({to, from}); it == stop_distance_.end())
+        stop_distance_[{to, from}] = distance;
+}
+
 std::optional<RouteInfo> TransportCatalogue::GetRouteStat(std::string_view name) const {
     auto it = buses_map_.find(name);
     if (it == buses_map_.end())
@@ -23,12 +29,14 @@ std::optional<RouteInfo> TransportCatalogue::GetRouteStat(std::string_view name)
     
     size_t stops_count = it->second->route.size();
     size_t unique_stops = std::unordered_set<const Stop*>(it->second->route.begin(), it->second->route.end()).size();
-    double route_length = 0;
+    double geograph_length = 0;
+    int real_length = 0;
     for (size_t i(0); i < it->second->route.size() - 1; ++i) {
-        route_length += Geo::ComputeDistance({it->second->route[i]->coordinates.lat, it->second->route[i]->coordinates.lng},
+        geograph_length += Geo::ComputeDistance({it->second->route[i]->coordinates.lat, it->second->route[i]->coordinates.lng},
                                         {it->second->route[i + 1]->coordinates.lat, it->second->route[i + 1]->coordinates.lng});
+        real_length += stop_distance_.at({it->second->route[i], it->second->route[i + 1]});
     }
-    return RouteInfo{stops_count, unique_stops, route_length};
+    return RouteInfo{stops_count, unique_stops, real_length, geograph_length};
 }
 
 
@@ -54,5 +62,7 @@ std::optional<std::set<std::string_view>> TransportCatalogue::GetBusesByStop(std
 
     return result.size() ? std::optional<std::set<std::string_view>>(std::move(result)) : std::nullopt;
 }
+
+
 
 }

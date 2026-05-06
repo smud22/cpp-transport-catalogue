@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+#include <sstream>
 
 namespace TransportCatalogue {
 namespace InputReader {
@@ -12,18 +13,33 @@ Geo::Coordinates ParseCoordinates(std::string_view str) {
 
     auto not_space = str.find_first_not_of(' ');
     auto comma = str.find(',');
-
     if (comma == str.npos) {
         return {nan, nan};
     }
 
     auto not_space2 = str.find_first_not_of(' ', comma + 1);
+    auto comma2 = str.find(',', comma + 1);
+
+    size_t lng_length = comma2 == std::string::npos ? (str.size() - not_space2) : (comma2 - not_space2);
 
     double lat = std::stod(std::string(str.substr(not_space, comma - not_space)));
-    double lng = std::stod(std::string(str.substr(not_space2)));
+    double lng = std::stod(std::string(str.substr(not_space2, lng_length)));
 
     return {lat, lng};
 }
+std::pair<std::string_view, int> ParseDistance(std::string_view str) {
+    auto not_space = str.find_first_not_of(' ');
+    auto end_of_number = str.find('m');
+
+    int number = std::stoi(std::string(str.substr(not_space, end_of_number - not_space)));
+
+    auto end_of_name = str.find_last_not_of(' ');
+    auto start_of_name = str.find_first_not_of(' ', str.find("to") + 2);
+    return {str.substr(start_of_name, end_of_name - start_of_name + 1), number};
+}
+
+
+
 std::string_view Trim(std::string_view string) {
     const auto start = string.find_first_not_of(' ');
     if (start == string.npos) {
@@ -97,6 +113,26 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
         if (command.command == "Stop") {
             auto coordinates = Detail::ParseCoordinates(command.description);
             catalogue.AddStop(command.id, coordinates);
+        }
+    }
+
+    for (const auto& command : commands_) {
+        if (command.command == "Stop") {
+            std::string_view line(command.description);
+            size_t comma = line.find(',', line.find(',') + 1);
+            if (comma == std::string::npos)
+                continue;
+            const Stop* stop_from = catalogue.FindStop(command.id);
+            size_t pos = comma + 1;
+            while (pos < line.size()) {
+                size_t next_comma = line.find(',', pos);
+                std::string_view segment(next_comma == std::string::npos ? line.substr(pos) : line.substr(pos, next_comma - pos));
+                auto [name, dist] = Detail::ParseDistance(segment);
+                catalogue.AddStopDistance(stop_from, catalogue.FindStop(name), dist);
+                if (next_comma == std::string::npos)
+                    break;
+                pos = next_comma + 1;
+            }
         }
     }
 

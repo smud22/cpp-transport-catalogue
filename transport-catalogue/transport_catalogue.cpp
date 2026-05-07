@@ -22,6 +22,10 @@ void TransportCatalogue::AddStopDistance(const Stop* from, const Stop* to, int d
         stop_distance_[{to, from}] = distance;
 }
 
+int TransportCatalogue::GetDistanceBetweenStops(const std::pair<const Stop*, const Stop*>& stop_pair) const {
+    return stop_distance_.at(stop_pair);
+}
+
 std::optional<RouteInfo> TransportCatalogue::GetRouteStat(std::string_view name) const {
     auto it = buses_map_.find(name);
     if (it == buses_map_.end())
@@ -34,7 +38,7 @@ std::optional<RouteInfo> TransportCatalogue::GetRouteStat(std::string_view name)
     for (size_t i(0); i < it->second->route.size() - 1; ++i) {
         geograph_length += Geo::ComputeDistance({it->second->route[i]->coordinates.lat, it->second->route[i]->coordinates.lng},
                                         {it->second->route[i + 1]->coordinates.lat, it->second->route[i + 1]->coordinates.lng});
-        real_length += stop_distance_.at({it->second->route[i], it->second->route[i + 1]});
+        real_length += GetDistanceBetweenStops({it->second->route[i], it->second->route[i + 1]});
     }
     return RouteInfo{stops_count, unique_stops, real_length, geograph_length};
 }

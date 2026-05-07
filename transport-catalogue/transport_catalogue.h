@@ -47,6 +47,7 @@ public:
 	const Bus* FindBus(std::string_view name) const;
 	std::optional<RouteInfo> GetRouteStat(std::string_view name) const;
 	std::optional<std::set<std::string_view>> GetBusesByStop(std::string_view stop) const;
+	int GetDistanceBetweenStops(const std::pair<const Stop*, const Stop*>& stop_pair) const;
 private:
 	std::deque<Stop> stops_container_;
 	std::deque<Bus> buses_container_;

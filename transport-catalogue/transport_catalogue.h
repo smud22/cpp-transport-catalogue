@@ -1,5 +1,7 @@
 #pragma once
+
 #include "geo.h"
+#include "domain.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
@@ -11,22 +13,6 @@
 #include <set>
 
 namespace TransportCatalogue {
-struct Stop {
-	std::string name;
-	Geo::Coordinates coordinates;
-};
-
-struct Bus {
-	std::vector<const Stop*> route;
-	std::string name;
-};
-
-struct RouteInfo {
-	size_t stops_count;
-    size_t unique_stops;
-	int real_length;
-    double geograph_length;
-};
 
 namespace Detail {
     struct StopPairHash {
@@ -41,13 +27,14 @@ namespace Detail {
 class TransportCatalogue {
 public:
 	void AddStop(std::string name, Geo::Coordinates coords);
-	void AddBus(std::string name, const std::vector<const Stop*>& routes);
+	void AddBus(std::string name, const std::vector<const Stop*>& routes, bool is_round);
 	void AddStopDistance(const Stop* from, const Stop* to, int distance);
 	const Stop* FindStop(std::string_view name) const;
 	const Bus* FindBus(std::string_view name) const;
 	std::optional<RouteInfo> GetRouteStat(std::string_view name) const;
 	std::optional<std::set<std::string_view>> GetBusesByStop(std::string_view stop) const;
 	int GetDistanceBetweenStop(const Stop* from, const Stop* to) const;
+	const std::deque<Bus>& GetBuses() const { return buses_container_; }
 private:
 	std::deque<Stop> stops_container_;
 	std::deque<Bus> buses_container_;

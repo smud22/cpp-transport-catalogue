@@ -1,32 +1,20 @@
+#include "transport_catalogue.h"
+#include "json_reader.h"
+#include "map_renderer.h"
+
 #include <iostream>
-#include <string>
-
-#include "input_reader.h"
-#include "stat_reader.h"
-
-using namespace std;
 
 int main() {
+    json::Document doc = json::Load(std::cin);
     TransportCatalogue::TransportCatalogue catalogue;
-
-    int base_request_count;
-    cin >> base_request_count >> ws;
-
-    {
-        TransportCatalogue::InputReader::InputReader reader;
-        for (int i = 0; i < base_request_count; ++i) {
-            string line;
-            getline(cin, line);
-            reader.ParseLine(line);
-        }
-        reader.ApplyCommands(catalogue);
-    }
-
-    int stat_request_count;
-    cin >> stat_request_count >> ws;
-    for (int i = 0; i < stat_request_count; ++i) {
-        string line;
-        getline(cin, line);
-        TransportCatalogue::StatReader::ParseAndPrintStat(catalogue, line, cout);
-    }
+    FillCatalogue(doc, catalogue);
+    Renderer::RenderSettings settings = ParseRenderSettings(doc.GetRoot().AsMap().at("render_settings").AsMap());
+    RequestHandler handler(catalogue);
+    Renderer::MapRenderer renderer(std::move(settings));
+    
+    json::Array responses = ProcessRequests(doc, catalogue, handler, renderer);
+    json::Document out_doc(std::move(responses));
+    json::Print(out_doc, std::cout);
+    
+    return 0;
 }

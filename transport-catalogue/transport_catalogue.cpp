@@ -1,5 +1,6 @@
 #include "transport_catalogue.h"
 #include "geo.h"
+
 #include <iterator>
 #include <algorithm>
 
@@ -8,11 +9,11 @@ void TransportCatalogue::AddStop(std::string name, Geo::Coordinates coords) {
     stops_container_.push_back(Stop{std::move(name), coords});
     stops_map_.insert({stops_container_.back().name, &stops_container_.back()});
 }
-void TransportCatalogue::AddBus(std::string name, const std::vector<const Stop*>& routes) {
+void TransportCatalogue::AddBus(std::string name, const std::vector<const Stop*>& routes, bool is_round) {
     std::vector<const Stop*> route;
     route = routes;
 
-    buses_container_.push_back(Bus{std::move(route), std::move(name)});
+    buses_container_.push_back(Bus{std::move(route), std::move(name), is_round});
     buses_map_.insert({buses_container_.back().name, &buses_container_.back()});
 }
 

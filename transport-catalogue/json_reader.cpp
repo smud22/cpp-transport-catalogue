@@ -85,14 +85,14 @@ json::Array ProcessRequests(const json::Document& doc, const TransportCatalogue:
                         bus_array.push_back(std::string(bus_name));
                     }
                 }
-                response.insert({"buses"s, bus_array});
+                response.insert({"buses"s, std::move(bus_array)});
                 response.insert({"request_id"s, request_id});
-                responses.push_back(response);
+                responses.push_back(std::move(response));
             } else {
                 json::Dict response;
                 response.insert({"request_id"s, request_id});
                 response.insert({"error_message"s, "not found"s});
-                responses.push_back(response);
+                responses.push_back(std::move(response));
             }
         }
 

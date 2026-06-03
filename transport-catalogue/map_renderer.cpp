@@ -68,7 +68,6 @@ private:
     double max_lat_ = 0;
     double zoom_coeff_ = 0;
 };
-}
 
 struct StopComparator {
     bool operator()(const TransportCatalogue::Stop* lhs, const TransportCatalogue::Stop* rhs) const {
@@ -76,40 +75,15 @@ struct StopComparator {
         }
 };
 
-
-namespace Renderer {
-
-svg::Document MapRenderer::RenderMap(const RequestHandler& handler) const {
-    auto buses = handler.GetAllBuses();
-    if (buses.empty())
-        return {};
-    std::set<const TransportCatalogue::Stop*, StopComparator> stops;
-    for (const auto& bus : buses) {
-        for (const auto& stop : bus->route) {
-            stops.insert(stop);
-        }
-    }
-
-    std::vector<TransportCatalogue::Geo::Coordinates> coordinates;
-    coordinates.reserve(stops.size());
-    for (const auto& stop : stops) {
-        coordinates.push_back(stop->coordinates);
-}
-    
-    SphereProjector projector(coordinates.begin(), coordinates.end(), settings_.width, settings_.height, settings_.padding);
-
-    svg::Document result_doc;
+void AddLines(const Renderer::RenderSettings& settings_, std::set<const TransportCatalogue::Bus*, BusComparator>& buses,
+                       SphereProjector& projector, svg::Document& result_doc) {
     size_t color_index = 0;
-
     for (const auto& bus : buses) {
         if (bus->route.empty())
             continue;
-        
-        
         const svg::Color& route_color = settings_.color_palette[color_index % settings_.color_palette.size()];
         ++color_index;
         std::vector<svg::Point> points;
-
         for (const auto& stop : bus->route) {
             points.push_back(projector(stop->coordinates));
         }
@@ -123,12 +97,12 @@ svg::Document MapRenderer::RenderMap(const RequestHandler& handler) const {
                 .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
                 .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
         result_doc.Add(polyline);
-        
-        
-
-
     }
-    color_index = 0;
+}
+
+void AddBusNames(const Renderer::RenderSettings& settings_, std::set<const TransportCatalogue::Bus*, BusComparator>& buses,
+                       SphereProjector& projector, svg::Document& result_doc) {
+    size_t color_index = 0;
     for (const auto& bus : buses) {
         const svg::Color& route_color = settings_.color_palette[color_index % settings_.color_palette.size()];
         ++color_index;
@@ -164,6 +138,10 @@ svg::Document MapRenderer::RenderMap(const RequestHandler& handler) const {
             result_doc.Add(label);
         }
     }
+}
+
+void AddStops(const Renderer::RenderSettings& settings_, std::set<const TransportCatalogue::Stop*, StopComparator>& stops,
+                       SphereProjector& projector, svg::Document& result_doc) {
     svg::Circle circle;
     circle.SetFillColor("white").SetRadius(settings_.stop_radius);
     for (const auto& stop : stops) {
@@ -187,9 +165,40 @@ svg::Document MapRenderer::RenderMap(const RequestHandler& handler) const {
         result_doc.Add(underlayer.SetPosition(projector(stop->coordinates)).SetData(stop->name));
         result_doc.Add(label.SetPosition(projector(stop->coordinates)).SetData(stop->name));
     }
+}
+}
+
+
+
+
+namespace Renderer {
+
+svg::Document MapRenderer::RenderMap(const RequestHandler& handler) const {
+    auto buses = handler.GetAllBuses();
+    if (buses.empty())
+        return {};
+    std::set<const TransportCatalogue::Stop*, StopComparator> stops;
+    for (const auto& bus : buses) {
+        for (const auto& stop : bus->route) {
+            stops.insert(stop);
+        }
+    }
+
+    std::vector<TransportCatalogue::Geo::Coordinates> coordinates;
+    coordinates.reserve(stops.size());
+    for (const auto& stop : stops) {
+        coordinates.push_back(stop->coordinates);
+    }
     
+    SphereProjector projector(coordinates.begin(), coordinates.end(), settings_.width, settings_.height, settings_.padding);
 
+    svg::Document result_doc;
 
+    AddLines(settings_, buses, projector, result_doc);
+    AddBusNames(settings_, buses, projector, result_doc);
+    AddStops(settings_, stops, projector, result_doc);
+    
+    
     return result_doc;
 }
 

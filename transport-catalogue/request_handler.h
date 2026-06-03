@@ -17,7 +17,7 @@ class RequestHandler {
 
 public:
 
-    RequestHandler(TransportCatalogue::TransportCatalogue& db) : db_(db) {}
+    explicit RequestHandler(TransportCatalogue::TransportCatalogue& db) : db_(db) {}
     std::set<const TransportCatalogue::Bus*, BusComparator> GetAllBuses() const;
 
 private:

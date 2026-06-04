@@ -96,7 +96,7 @@ void AddLines(const Renderer::RenderSettings& settings_, std::set<const Transpor
                 .SetStrokeWidth(settings_.line_width)
                 .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
                 .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
-        result_doc.Add(polyline);
+        result_doc.Add(std::move(polyline));
     }
 }
 
@@ -134,8 +134,8 @@ void AddBusNames(const Renderer::RenderSettings& settings_, std::set<const Trans
             auto pos = projector((*it)->coordinates);
             underlayer.SetPosition(pos);
             label.SetPosition(pos);
-            result_doc.Add(underlayer);
-            result_doc.Add(label);
+            result_doc.Add(std::move(underlayer));
+            result_doc.Add(std::move(label));
         }
     }
 }

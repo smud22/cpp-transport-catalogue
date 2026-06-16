@@ -12,8 +12,7 @@ int main() {
     RequestHandler handler(catalogue);
     Renderer::MapRenderer renderer(std::move(settings));
     
-    json::Array responses = ProcessRequests(doc, catalogue, handler, renderer);
-    json::Document out_doc(std::move(responses));
+    json::Document out_doc{ProcessRequests(doc, catalogue, handler, renderer)};
     json::Print(out_doc, std::cout);
     
     return 0;
